@@ -30,8 +30,9 @@ subscribe(() => {
 });
 
 
-defineRoutes([{
-  path:'/', view: MenuScreen
-}]);
+defineRoutes([
+  {path:'/', view: MenuScreen},
+  {path:'/lobby', view: LobbyScreen}
+]);
 
 initRouter();
