@@ -162,3 +162,58 @@ input::placeholder {
 	padding: 0px 20px;
 	background-color: #430c6c90;
 }
+
+
+.chat-section{
+	width: 70%;
+	height: 100%;
+	background-color: rgba(255, 255, 255, 0.1);
+	border-radius: 0px 15px 15px 0px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+.chat-messages{
+	flex-grow: 1;
+	padding: 20px;
+	overflow-y: auto;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+.chat-input-container{
+	padding: 10px;
+	background-color: #571c85;
+	border-radius: 0px 0px 15px 0px;
+	display: flex;
+
+}
+.chat-input-container input{
+	flex-grow: 1;
+	padding: 10px;
+	border: none;
+	border-radius: 10px;
+	background-color: #8258a3;
+	color: white;
+	font-size: 16px;
+}
+.chat-input-container input::placeholder{
+	color: #ddd;
+}
+.chat-input-container input:focus{
+	outline: none;
+}
+.chat-input-container input:focus::placeholder{
+	color: transparent;
+}
+.chat-input-container button{
+	margin-left: 10px;
+	padding: 10px 20px;
+	border: none;
+	background: linear-gradient(90deg, #f87216 0%, #dd2825 100%);
+	color: white;
+	font-size: 16px;
+	border-radius: 15px;
+	cursor: pointer;
+	transition: all 0.5s ease-in-out;
+}

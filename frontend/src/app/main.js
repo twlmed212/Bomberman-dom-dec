@@ -15,10 +15,26 @@ import { LobbyScreen } from '../ui/LobbyScreen.js';
 initState({
     nickname: '',
     error: '',
+    players: [
+      {name: 'Alice'},
+      {name: 'Bob'}
+    ],
+    chatMessages: [],
+    countdownActive: false,
+    countdownSkipping: false,
+    chatInput: '',
+    countdown: 20,
     hooks: []
 
 })
 
+// TEst DATA
+
+for (let i = 0; i < 100; i++) {
+  // testing message mook
+  const state = getState();
+  state.chatMessages.push({ from: `${ state.players[i % 2].name}`, message: `This is message number ${i + 1}` });
+}
 const root = document.getElementById('app');
 
 initEventSystem(root);

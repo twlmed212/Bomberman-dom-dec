@@ -19,17 +19,7 @@ export function LobbyScreen() {
     const state = getState();
     const players = state.players || [];
 
-    // For testing purposes, we add dummy players
-    players.push({name: 'Player1'});
-    players.push({name: 'Player2'});
-    // Dummy chat messages can be added similarly if needed
     const chatMessages = state.chatMessages || [];
-    chatMessages.push({from: 'Player1', message: 'Hello!'});
-    chatMessages.push({from: 'Player2', message: 'Hi there!'});
-    chatMessages.push({from: 'Player1', message: 'how are you?'});
-    chatMessages.push({from: 'Player2', message: 'I am good, thanks!'});
-    chatMessages.push({from: 'Player1', message: 'Ready to play?'});
-    chatMessages.push({from: 'Player2', message: 'Absolutely!'});
 
     return(
         makeElement('div', {class: 'lobby-screen'}, [
@@ -43,7 +33,7 @@ export function LobbyScreen() {
                             console.log("tojslfjslkdfj", idx);
                             console.log("tojslfjslkdfj", player);
                             
-                            return makeElement('div', {class: 'player-item'}, `${idx} - ${player.name}`);
+                            return makeElement('div', {class: 'player-item', key: idx}, `${idx} - ${player.name}`);
                         })
                     ),
                     makeElement('div', {
@@ -68,11 +58,15 @@ export function LobbyScreen() {
                             placeholder: 'Type your message...',
                             value: state.chatInput || '',
                             onInput: (e) => {
-                                setState({chatInput: e.target.value});
+                                setState({ chatInput: e.target.value });
                             },
-                            onEnter: () => {
-                                console.log('Send message:', state.chatInput);
-                                setState({chatInput: ''});
+                            onKeyDown: (e) => {
+                                 if (e.key === 'Enter') {
+                                    // TODO Send the message through
+                                    // websocket or appropriate method
+                                    console.log('Send message');
+                                    setState({chatInput: ''});
+                                }
                             }
                         }),
                         makeElement('button', {
