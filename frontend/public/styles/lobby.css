@@ -100,3 +100,76 @@ input::placeholder {
 .menu-box button:active{
   transform: scale(0.98);
 }
+
+/* GAME OVER SCREEN STYLING :D  */
+.gameover-screen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(90deg, #141731 0%, #571c85 40%,  #571c85 60%, #141731 100%);  
+  color: white;
+}
+.gameover-box {
+  background-color: rgba(131, 46, 197, 0.647);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  padding: 30px;
+  width: 400px;
+  box-shadow: 0 8px 32px 0 #00000078;
+  border: 1px solid #8258a3;
+  text-align: center;
+}
+.gameover-title {
+  font-size: 36px;
+  margin-bottom: 20px;
+}
+.winner-banner {
+  background-color: #651b9e;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+.winner-name {
+  font-size: 24px;
+  font-weight: bold;
+  margin-top: 10px;
+}
+.final-scores {
+  text-align: left;
+  margin-bottom: 20px;
+}
+.scores-list {
+  margin-top: 10px;
+}
+.score-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #8258a3;
+}
+.score-item.winner {
+  background-color: #430c6c90;
+  font-weight: bold;
+}
+.score {
+  color: #f0a500;
+}
+.play-again-btn {
+  padding: 10px 20px;
+  border: none;
+  background: linear-gradient(90deg, #f87216 0%, #dd2825 100%);
+  color: white;
+  font-size: 16px;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.5s ease-in-out;
+} 
+.play-again-btn:hover{
+  background: linear-gradient(90deg, #dd2825 0%, #f87216 100%);
+  transition: all 0.5s ease-in-out;
+}
+.play-again-btn:active{
+  transform: scale(0.98);
+}

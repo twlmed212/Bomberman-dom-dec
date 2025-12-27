@@ -11,6 +11,7 @@ import {
 } from '../framework/state.js';
 import { MenuScreen } from '../ui/MenuScreen.js';
 import { LobbyScreen } from '../ui/LobbyScreen.js';
+import { GameOverScreen } from '../ui/GameOverScreen.js';
 
 initState({
     nickname: '',
@@ -48,7 +49,8 @@ subscribe(() => {
 
 defineRoutes([
   {path:'/', view: MenuScreen},
-  {path:'/lobby', view: LobbyScreen}
+  {path:'/lobby', view: LobbyScreen},
+  {path:'/gameover', view: GameOverScreen}
 ]);
 
 initRouter();
