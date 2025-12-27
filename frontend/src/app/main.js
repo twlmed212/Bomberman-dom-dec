@@ -17,9 +17,12 @@ initState({
     nickname: '',
     error: '',
     players: [
-      {name: 'Alice'},
-      {name: 'Bob'}
+      {name: 'Alice', score: 150},
+      {name: 'Bob', score: 120},
+      {name: 'Charlie', score: 90},
+      {name: 'Diana', score: 60},
     ],
+    winner: 'Charlie',
     chatMessages: [],
     countdownActive: false,
     countdownSkipping: false,
