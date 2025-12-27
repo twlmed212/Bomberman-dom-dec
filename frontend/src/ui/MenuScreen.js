@@ -1,4 +1,5 @@
 import {makeElement} from '../framework/dom.js';
+import { navigate } from '../framework/router.js';
 import {getState, setState} from '../framework/state.js';
 
 export function MenuScreen() {
@@ -24,24 +25,35 @@ export function MenuScreen() {
                         value: state.nickname, onInput: (e) => {
                             setState({nickname: e.target.value});
                         },
-                        onkeydown: (e) => {console.log("key =", e.key, " Value : ", state.nickname);
+                        onKeyDown: (e) => {
+                            setState({nickname: e.target.value});
+                            if (e.key === 'Enter') {
+                                checkUser();
+                            }
                         }
                     }),
                     makeElement('img', {src: '../public/images/user-icon.png', alt: 'User Icon', class: 'icon-person'}),
                 ]),
                 makeElement('button', {id: 'joinBtn',
                     onClick: () => {
-                        const name = state.nickname?.trim();
-                        if (name && name.length > 0) {
-                            console.log("Joining the game with name :",  name);
-                            // TODO Connect with the server
-                        }else{
-                            setState({error: 'Please enter a valid nickname.'} );
-                        }
+                            checkUser();
                     }
                 }, 'Enter Game ->'),
                 makeElement('p', {id: 'error', class: 'error', style: `display: ${state.error ? 'block' : 'none'}`}, state.error || ''),
             ]),
         ])
     );
+}
+
+function checkUser() {
+    const state = getState();
+    const name = state.nickname?.trim();
+    if (name && name.length > 0) {
+        console.log("Starting game with name :",  name);
+        navigate('/lobby');
+        // TODO Connect with the server
+        // and check name with server
+    }else{
+        setState({error: 'Please enter a valid nickname.'} );
+    }
 }

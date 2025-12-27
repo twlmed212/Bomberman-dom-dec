@@ -27,7 +27,9 @@ export function LobbyScreen() {
                         style: `display: ${state.countdownActive ? 'block' : 'none'}`
                     }, 'Game starts in: 00:20'),
                 ]),
-                ChatPanel()
+                makeElement("div", { class: "chat-section" }, [
+                    ChatPanel()
+                ])
             ])
         ])
     );

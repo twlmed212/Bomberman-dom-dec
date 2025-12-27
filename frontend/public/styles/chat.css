@@ -67,6 +67,11 @@
 	flex-direction: column;
 	justify-content: space-between;
 }
+.chat-panel{
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
 .chat-messages{
 	flex-grow: 1;
 	padding: 20px;

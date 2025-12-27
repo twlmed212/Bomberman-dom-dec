@@ -5,7 +5,7 @@ export function ChatPanel() {
   const state = getState();
   const chatMessages = state.chatMessages || [];
 
-  return makeElement("div", { class: "chat-section" }, [
+  return makeElement("div", { class: "chat-panel" }, [
     makeElement(
       "div",
       { class: "chat-messages" },
@@ -28,10 +28,7 @@ export function ChatPanel() {
         },
         onKeyDown: (e) => {
           if (e.key === "Enter") {
-            // TODO Send the message through
-            // websocket or appropriate method
-            console.log("Send message");
-            setState({ chatInput: "" });
+            sendMessage(state.chatInput)
           }
         },
       }),
@@ -40,12 +37,23 @@ export function ChatPanel() {
         {
           class: "chat-send-button",
           onClick: () => {
-            console.log("Send message:", state.chatInput);
-            setState({ chatInput: "" });
+            sendMessage(state.chatInput)
           },
         },
         "Send"
       ),
     ]),
   ]);
+}
+
+
+function sendMessage(message) {
+  const msg = message?.trim();
+  
+  if (!msg) return;
+  
+  console.log('Sending:', msg);
+  // TODO: Send to server
+  
+  setState({ chatInput: '' });
 }
