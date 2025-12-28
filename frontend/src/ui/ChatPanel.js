@@ -1,5 +1,6 @@
 import { makeElement } from "../framework/dom.js";
-import { getState, setState, useState } from "../framework/state.js";
+import { getState, setState } from "../framework/state.js";
+import { ws } from "../ws.js";
 
 export function ChatPanel() {
   const state = getState();
@@ -9,9 +10,8 @@ export function ChatPanel() {
     makeElement(
       "div",
       { class: "chat-messages" },
-      // TODO Chat messages will go here
-      chatMessages.map((msg) => {
-        return makeElement("div", { class: "chat-message" }, [
+      chatMessages.map((msg, idx) => {
+        return makeElement("div", { class: "chat-message", key: idx }, [
           makeElement("strong", {}, `${msg.from}: `),
           makeElement("span", {}, msg.message),
         ]);
@@ -22,13 +22,13 @@ export function ChatPanel() {
         type: "text",
         class: "chat-input",
         placeholder: "Type your message...",
-        value: state.chatInput || "",
+        value: state.chatInput || '',
         onInput: (e) => {
           setState({ chatInput: e.target.value });
         },
         onKeyDown: (e) => {
           if (e.key === "Enter") {
-            sendMessage(state.chatInput)
+            sendMessage();
           }
         },
       }),
@@ -36,9 +36,7 @@ export function ChatPanel() {
         "button",
         {
           class: "chat-send-button",
-          onClick: () => {
-            sendMessage(state.chatInput)
-          },
+          onClick: sendMessage
         },
         "Send"
       ),
@@ -46,14 +44,13 @@ export function ChatPanel() {
   ]);
 }
 
-
-function sendMessage(message) {
-  const msg = message?.trim();
+function sendMessage() {
+  const state = getState();
+  const msg = state.chatInput?.trim();
   
   if (!msg) return;
   
-  console.log('Sending:', msg);
-  // TODO: Send to server
+  ws.sendChat(msg);
   
-  setState({ chatInput: '' });
+    setState({ chatInput: '' });
 }

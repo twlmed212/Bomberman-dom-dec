@@ -1,6 +1,7 @@
 import {makeElement} from '../framework/dom.js';
 import { navigate } from '../framework/router.js';
 import {getState, setState} from '../framework/state.js';
+import { ws } from '../ws.js';
 
 export function MenuScreen() {
     const state  = getState();
@@ -35,9 +36,7 @@ export function MenuScreen() {
                     makeElement('img', {src: '../public/images/user-icon.png', alt: 'User Icon', class: 'icon-person'}),
                 ]),
                 makeElement('button', {id: 'joinBtn',
-                    onClick: () => {
-                            checkUser();
-                    }
+                    onClick: joinGame
                 }, 'Enter Game ->'),
                 makeElement('p', {id: 'error', class: 'error', style: `display: ${state.error ? 'block' : 'none'}`}, state.error || ''),
             ]),
@@ -45,15 +44,15 @@ export function MenuScreen() {
     );
 }
 
-function checkUser() {
-    const state = getState();
-    const name = state.nickname?.trim();
-    if (name && name.length > 0) {
-        console.log("Starting game with name :",  name);
-        navigate('/lobby');
-        // TODO Connect with the server
-        // and check name with server
-    }else{
-        setState({error: 'Please enter a valid nickname.'} );
-    }
+function joinGame() {
+  const state = getState();
+  const name = state.nickname?.trim();
+  
+  if (!name || name.length < 3) {
+    setState({ error: 'Nickname must be 3+ characters' });
+    return;
+  }
+  
+  setState({ error: '' });
+  ws.join(name);
 }

@@ -16,9 +16,6 @@ export function LobbyScreen() {
                     makeElement('h3', {class: 'players-subtitle'}, `List of Joined Players:`),
                     makeElement('div', {class: 'player-list'}, 
                         players.map((player, idx) => {
-                            console.log("tojslfjslkdfj", idx);
-                            console.log("tojslfjslkdfj", player);
-                            
                             return makeElement('div', {class: 'player-item', key: idx}, `${idx} - ${player.name}`);
                         })
                     ),

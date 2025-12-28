@@ -42,6 +42,9 @@ function createDOM(vnode) {
                 element.setAttribute('checked', '');
                 element.checked = true;
             }
+        } else if (key === 'value') {
+            element.setAttribute('value', value);
+            element.value = value;
         } else {
             element.setAttribute(key, value);
         }
@@ -99,7 +102,6 @@ function updateAttributes(oldVnode, newVnode) {
     const oldAttrs = oldVnode.attrs;
     const newAttrs = newVnode.attrs;
 
-    // FIX 4: Use Object.keys() not Object.entries()
     for (const key of Object.keys(oldAttrs)) {
         if (!(key in newAttrs)) {
             if (key.startsWith('on')) {
@@ -111,7 +113,6 @@ function updateAttributes(oldVnode, newVnode) {
         }
     }
 
-    // FIX 5: Use oldAttrs[key] not oldAttrs.key
     for (const [key, value] of Object.entries(newAttrs)) {
         if (oldAttrs[key] !== value) {
             if (key.startsWith('on')) {
@@ -125,13 +126,15 @@ function updateAttributes(oldVnode, newVnode) {
                     elem.removeAttribute('checked');
                     elem.checked = false;
                 }
+            } else if (key === 'value') {
+                elem.setAttribute('value', value);
+                elem.value = value;
             } else {
                 elem.setAttribute(key, value);
             }
         }
     }
 }
-
 function updateChildren(oldVnode, newVnode) {
     const parentElement = newVnode.element;
     const oldKids = oldVnode.children || [];

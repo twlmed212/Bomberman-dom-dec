@@ -12,48 +12,84 @@ import {
 import { MenuScreen } from '../ui/MenuScreen.js';
 import { LobbyScreen } from '../ui/LobbyScreen.js';
 import { GameOverScreen } from '../ui/GameOverScreen.js';
+import { ws } from '../ws.js'
 
 initState({
-    nickname: '',
-    error: '',
-    players: [
-      {name: 'Alice', score: 150},
-      {name: 'Bob', score: 120},
-      {name: 'Charlie', score: 90},
-      {name: 'Diana', score: 60},
-    ],
-    winner: 'Charlie',
-    chatMessages: [],
-    countdownActive: false,
-    countdownSkipping: false,
-    chatInput: '',
-    countdown: 20,
-    hooks: []
+  screen: 'menu',  // 'menu' | 'lobby' | 'game' | 'gameover'
+  nickname: '',
+  playerId: null,
+  players: [],
+  chatMessages: [],
+  chatInput: '',
+  countdown: null,
+  winner: null,
+  hooks: []
+});
 
-})
+// WebSocket Mockup Testing
 
-// TEst DATA
+// Setup WebSocket listeners
+ws.on('CONNECTED', (data) => {
+  console.log('Connected:', data);
+  setState({ playerId: data.playerId });
+});
 
-for (let i = 0; i < 100; i++) {
-  // testing message mook
+ws.on('LOBBY_UPDATE', (data) => {
+  console.log('Lobby update:', data);
+  setState({ 
+    players: data.players,
+    screen: 'lobby'
+  });
+});
+
+ws.on('CHAT_MESSAGE', (data) => {
+  console.log('New chat:', data);
   const state = getState();
-  state.chatMessages.push({ from: `${ state.players[i % 2].name}`, message: `This is message number ${i + 1}` });
-}
+  setState({ 
+    chatMessages: [...state.chatMessages, data]
+  });
+});
+
+ws.on('GAME_START', (data) => {
+  console.log('Game starting:', data);
+  setState({ 
+    countdown: data.countdown,
+    // screen: 'game'  // We don't have GameScreen yet, show lobby for now
+  });
+});
+
+ws.on('GAME_OVER', (data) => {
+  console.log('Game over:', data);
+  setState({ 
+    winner: data.winner,
+    players: data.players,
+    screen: 'gameover'
+  });
+});
+
 const root = document.getElementById('app');
 
 initEventSystem(root);
 
+// Router - decides which screen to show
+function App() {
+  const state = getState();
+  
+  if (state.screen === 'menu') return MenuScreen();
+  if (state.screen === 'lobby') return LobbyScreen();
+  if (state.screen === 'gameover') return GameOverScreen();
+  
+  // Default
+  return MenuScreen();
+}
 
+// Re-render on state change
 subscribe(() => {
   resetHookIndex();
-  render(MenuScreen(), root);
+  render(App(), root);
 });
 
-
-defineRoutes([
-  {path:'/', view: MenuScreen},
-  {path:'/lobby', view: LobbyScreen},
-  {path:'/gameover', view: GameOverScreen}
-]);
-
-initRouter();
+// Initial render
+ws.connect();
+resetHookIndex();
+render(App(), root);

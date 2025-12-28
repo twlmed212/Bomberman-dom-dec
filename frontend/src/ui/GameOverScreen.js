@@ -1,5 +1,5 @@
 import { makeElement } from '../framework/dom.js';
-import { getState } from '../framework/state.js';
+import { getState, setState } from '../framework/state.js';
 
 export function GameOverScreen() {
   const state = getState();
@@ -35,7 +35,13 @@ export function GameOverScreen() {
         class: 'play-again-btn',
         onClick: () => {
           console.log('Play again clicked');
-          // TODO: Reset game
+          setState({ 
+            screen: 'menu',
+            nickname: '',
+            players: [],
+            chatMessages: [],
+            winner: null
+          });
         }
       }, 'Play Again')
     ])
