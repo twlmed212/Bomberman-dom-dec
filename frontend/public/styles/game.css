@@ -1,0 +1,95 @@
+.game-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(90deg, #141731 0%, #571c85 40%,  #571c85 60%, #141731 100%);  
+  padding: 20px;
+}
+
+.input-handler {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  outline: none;
+}
+
+.game-hud {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 750px;
+  padding: 15px;
+  background: #16213e;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  color: white;
+}
+
+.hud-player-info {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.player-name {
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.player-lives {
+  font-size: 1.5rem;
+}
+
+.hud-timer {
+  font-size: 1.2rem;
+}
+
+
+
+.game-renderer {
+  background: #0f3460;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.game-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.grid-row {
+  display: flex;
+  gap: 2px;
+}
+
+.grid-cell {
+  width: 40px;
+  height: 40px;
+  background: #2d4a6f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.grid-cell.wall {
+  background: #1a1a2e;
+}
+
+.grid-cell.block {
+  background: #8B4513;
+}
+
+.grid-cell.explosion {
+  background: #ff6b6b;
+}
+
+.grid-cell.bomb {
+  background: #2d4a6f;
+}
+
+.grid-cell.player {
+  background: #2d4a6f;
+}

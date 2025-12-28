@@ -1,21 +1,18 @@
 import { initEventSystem } from '../framework/event.js';
-import { defineRoutes, navigate, initRouter } from '../framework/router.js';
 import { makeElement, render } from '../framework/dom.js';
-import {
-  getState,
-  setState,
-  subscribe,
-  initState,
-  resetHookIndex,
-  useState,
-} from '../framework/state.js';
+import { getState, setState, subscribe, initState, resetHookIndex } from '../framework/state.js';
 import { MenuScreen } from '../ui/MenuScreen.js';
 import { LobbyScreen } from '../ui/LobbyScreen.js';
 import { GameOverScreen } from '../ui/GameOverScreen.js';
-import { ws } from '../ws.js'
+import { GameScreen } from '../game/GameScreen.js';
+import { ws } from '../ws.js';
+
+const root = document.getElementById('app');
+
+initEventSystem(root);
 
 initState({
-  screen: 'menu',  // 'menu' | 'lobby' | 'game' | 'gameover'
+  screen: 'menu',
   nickname: '',
   playerId: null,
   players: [],
@@ -23,11 +20,10 @@ initState({
   chatInput: '',
   countdown: null,
   winner: null,
+  gameState: null,
   hooks: []
 });
-
-// WebSocket Mockup Testing
-
+// For Testing
 // Setup WebSocket listeners
 ws.on('CONNECTED', (data) => {
   console.log('Connected:', data);
@@ -54,8 +50,12 @@ ws.on('GAME_START', (data) => {
   console.log('Game starting:', data);
   setState({ 
     countdown: data.countdown,
-    // screen: 'game'  // We don't have GameScreen yet, show lobby for now
+    screen: 'game'  // ← Now we have GameScreen
   });
+});
+
+ws.on('GAME_STATE', (data) => {
+  setState({ gameState: data });
 });
 
 ws.on('GAME_OVER', (data) => {
@@ -67,19 +67,15 @@ ws.on('GAME_OVER', (data) => {
   });
 });
 
-const root = document.getElementById('app');
-
-initEventSystem(root);
-
-// Router - decides which screen to show
+// Router
 function App() {
   const state = getState();
   
   if (state.screen === 'menu') return MenuScreen();
   if (state.screen === 'lobby') return LobbyScreen();
+  if (state.screen === 'game') return GameScreen();
   if (state.screen === 'gameover') return GameOverScreen();
   
-  // Default
   return MenuScreen();
 }
 
