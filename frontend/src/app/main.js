@@ -23,6 +23,7 @@ initState({
   gameState: null,
   hooks: []
 });
+
 // For Testing
 // Setup WebSocket listeners
 ws.on('CONNECTED', (data) => {
