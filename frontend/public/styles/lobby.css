@@ -1,4 +1,8 @@
-
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 body{
     font-family: "Poppins", sans-serif;
     background: linear-gradient(90deg, #141731 0%, #571c85 40%,  #571c85 60%, #141731 100%);  
@@ -73,7 +77,8 @@ input::placeholder {
   background-color: rgba(131, 46, 197, 0.647);
   border-radius: 15px;
   font-size: 16px;
-  color: #a87fcd;
+  color: white;
+  width: 100%;
 }
 .menu-box {
   padding: 0px 20px;

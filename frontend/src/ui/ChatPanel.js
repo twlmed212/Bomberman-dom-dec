@@ -9,10 +9,10 @@ export function ChatPanel() {
   return makeElement("div", { class: "chat-panel" }, [
     makeElement(
       "div",
-      { class: "chat-messages" },
+      { class: "chat-messages", autoscroll: chatMessages.length > 0 },
       chatMessages.map((msg, idx) => {
         return makeElement("div", { class: "chat-message", key: idx }, [
-          makeElement("strong", {}, `${msg.from}: `),
+          makeElement("strong", {}, `${msg.playerName}: `),
           makeElement("span", {}, msg.message),
         ]);
       })

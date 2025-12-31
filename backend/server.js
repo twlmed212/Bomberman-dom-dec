@@ -1,22 +1,35 @@
-import { WebSocketServer } from 'ws';
+import { WebSocketServer } from './websocket/WebSocketServer.js';
+import { LobbyManager } from './lobby/LobbyManager.js';
+import { GameManager } from './game/GameManager.js';
 
-const wss = new WebSocketServer({ port: 8080 });
+const PORT = 8080;
 
+const gameManager = new GameManager();
 
-wss.on('connection', (ws) => {
-  console.log('Client connected');
+const wsServer = new WebSocketServer(PORT, null, gameManager);
 
-  ws.on('message', (data) => {
-    console.log('Received:', data.toString());
-    
-    // Echo back for testing
-    ws.send(JSON.stringify({ type: 'ECHO', data: data.toString() }));
-  });
+const lobby = new LobbyManager(wsServer, gameManager);
 
-  ws.on('close', () => {
-    console.log('Client disconnected');
-  });
- 
-  // Send welcome message
-  ws.send(JSON.stringify({ type: 'CONNECTED', playerId: 'test_123' }));
+wsServer.lobby = lobby;
+
+gameManager.onGameState((gameState) => {
+  // Handle different event types from GameManager
+  if (gameState.type === 'PLAYER_DIED') {
+    wsServer.broadcast(gameState);
+  } else {
+    wsServer.broadcast({
+      type: 'GAME_STATE',
+      ...gameState
+    });
+  }
 });
+
+gameManager.onGameOver((data) => {
+  wsServer.broadcast({
+    type: 'GAME_OVER',
+    ...data
+  });
+});
+
+console.log('Bomberman Server Started');
+console.log('Listening on port', PORT);

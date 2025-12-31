@@ -6,6 +6,15 @@ export function LobbyScreen() {
     const state = getState();
     const players = state.players || [];
 
+    // Determine what message to show
+    let statusMessage = '';
+    if (state.countdown) {
+        statusMessage = `Game starts in: ${state.countdown} seconds`;
+    } else if (state.waiting) {
+        statusMessage = `Waiting for more players... ${state.waitingTime || 20} seconds`;
+    } else if (players.length < 2) {
+        statusMessage = 'Waiting for players to join...';
+    }
 
     return(
         makeElement('div', {class: 'lobby-screen'}, [
@@ -14,15 +23,15 @@ export function LobbyScreen() {
                 makeElement('div', {class: 'players-section'}, [
                     makeElement('h2', {class: 'players-title'}, `Players (${players.length}/4)`),
                     makeElement('h3', {class: 'players-subtitle'}, `List of Joined Players:`),
-                    makeElement('div', {class: 'player-list'}, 
+                    makeElement('div', {class: 'player-list'},
                         players.map((player, idx) => {
-                            return makeElement('div', {class: 'player-item', key: idx}, `${idx} - ${player.name}`);
+                            return makeElement('div', {class: 'player-item', key: idx}, `${idx + 1}. ${player.name}`);
                         })
                     ),
                     makeElement('div', {
                         class: 'countdown-timer',
-                        style: `display: ${state.countdownActive ? 'block' : 'none'}`
-                    }, 'Game starts in: 00:20'),
+                        style: `display: ${statusMessage ? 'block' : 'none'}`
+                    }, statusMessage),
                 ]),
                 makeElement("div", { class: "chat-section" }, [
                     ChatPanel()

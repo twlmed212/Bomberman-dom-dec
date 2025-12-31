@@ -1,171 +1,69 @@
-// Mock WebSocket for testing
-// Simulates server responses
+import { SERVER_TO_CLIENT, CLIENT_TO_SERVER } from '../../shared/messages/index.js';
 
-let mockPlayerId = null;
-let mockPlayers = [];
-let mockMessages = [];
+const WS_URL = 'ws://localhost:8080';
+
+let socket = null;
 let listeners = {};
-let gameLoopInterval = null;
-let mockMap = null;
-
-// Simulate server responses with delay
-function simulateServer(type, data) {
-  setTimeout(() => {
-    if (listeners[type]) {
-      listeners[type](data);
-    }
-  }, 100);
-}
 
 export const ws = {
-  // Connect to server
   connect() {
-    console.log("\ud83d\udd0c Mock WS: Connecting...");
+    console.log('🔌 Connecting to server...');
+    
+    socket = new WebSocket(WS_URL);
 
-    setTimeout(() => {
-      mockPlayerId = "player_" + Date.now();
-      simulateServer("CONNECTED", { playerId: mockPlayerId });
-      console.log("\u2705 Mock WS: Connected", mockPlayerId);
-    }, 500);
-  },
-
-  // Send JOIN message
-  join(nickname) {
-    console.log("\ud83d\udce4 Mock WS: JOIN", nickname);
-
-    // Add self to players
-    mockPlayers.push({
-      id: mockPlayerId,
-      name: nickname,
-    });
-
-    // Simulate other players joining
-    setTimeout(() => {
-      mockPlayers.push({
-        id: "player_bot1",
-        name: "Bot1",
-      });
-      simulateServer("LOBBY_UPDATE", {
-        players: [...mockPlayers],
-        count: mockPlayers.length,
-      });
-    }, 1000);
-
-    // Start game when 2+ players
-    setTimeout(() => {
-      if (mockPlayers.length >= 2) {
-        simulateServer("GAME_START", { countdown: 3 });
-
-        mockMap = createMockMap();
-
-        // Start game state loop
-        gameLoopInterval = setInterval(() => {
-          const mockGameState = {
-            map: mockMap,
-            players: mockPlayers.map((p, i) => ({
-              ...p,
-              x: i === 0 ? 1 : 13,
-              y: i === 0 ? 1 : 13,
-              lives: 3,
-            })),
-            bombs: [],
-            explosions: [],
-            timer: "02:30",
-          };
-
-          simulateServer("GAME_STATE", mockGameState);
-        }, 100);
-      }
-    }, 3000);
-  },
-
-  // Send CHAT message
-  sendChat(message) {
-    console.log("\ud83d\udce4 Mock WS: CHAT", message);
-
-    const chatMsg = {
-      from: mockPlayers.find((p) => p.id === mockPlayerId)?.name || "You",
-      message: message,
-      timestamp: Date.now(),
+    socket.onopen = () => {
+      console.log('✅ Connected to server');
     };
 
-    mockMessages.push(chatMsg);
-    simulateServer("CHAT_MESSAGE", chatMsg);
+    socket.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data);
+        const handler = listeners[message.type];
+        
+        if (handler) {
+          handler(message);
+        }
+      } catch (err) {
+        console.error('Invalid message:', err);
+      }
+    };
 
-    // Simulate bot reply
-    setTimeout(() => {
-      const botMsg = {
-        from: "Bot1",
-        message: "Nice!",
-        timestamp: Date.now(),
-      };
-      mockMessages.push(botMsg);
-      simulateServer("CHAT_MESSAGE", botMsg);
-    }, 1500);
+    socket.onerror = (err) => {
+      console.error('❌ WebSocket error:', err);
+    };
+
+    socket.onclose = () => {
+      console.log('🔌 Disconnected from server');
+    };
   },
 
-  // Send MOVE message
+  join(nickname) {
+    this.send(CLIENT_TO_SERVER.JOIN, { playerName: nickname });
+  },
+
+  sendChat(message) {
+    this.send(CLIENT_TO_SERVER.CHAT, { message });
+  },
+
   sendMove(direction) {
-    console.log("\ud83d\udce4 Mock WS: MOVE", direction);
-    // Real ws will send to server
+    this.send(CLIENT_TO_SERVER.MOVE, { direction: direction.toUpperCase() });
   },
 
-  // Send BOMB message
   sendBomb() {
-    console.log("\ud83d\udce4 Mock WS: BOMB");
-    // Real ws will send to server
+    this.send(CLIENT_TO_SERVER.BOMB, {});
   },
 
-  // Send READY message
   ready() {
-    console.log("\ud83d\udce4 Mock WS: READY");
+    this.send(CLIENT_TO_SERVER.READY, {});
   },
 
-  // Listen to server messages
   on(eventType, callback) {
     listeners[eventType] = callback;
   },
 
-  // Simulate game over (for testing)
-  mockGameOver() {
-    if (gameLoopInterval) {
-      clearInterval(gameLoopInterval);
+  send(type, data) {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify({ type, ...data }));
     }
-
-    setTimeout(() => {
-      simulateServer("GAME_OVER", {
-        winner: mockPlayers[0].name,
-        players: mockPlayers.map((p, idx) => ({
-          ...p,
-          score: 100 - idx * 20,
-        })),
-      });
-    }, 1000);
-  },
-};
-
-// Create mock map
-function createMockMap() {
-  const map = [];
-  for (let y = 0; y < 15; y++) {
-    const row = [];
-    for (let x = 0; x < 15; x++) {
-      // Border walls
-      if (x === 0 || x === 14 || y === 0 || y === 14) {
-        row.push(1); // wall
-      }
-      // Grid pattern walls
-      else if (x % 2 === 0 && y % 2 === 0) {
-        row.push(1); // wall
-      }
-      // Some blocks (not at corners)
-      else if ((x > 2 || y > 2) && (x < 12 || y < 12) && Math.random() > 0.7) {
-        row.push(2); // block
-      } else {
-        row.push(0); // empty
-      }
-    }
-    map.push(row);
   }
-  return map;
-}
+};

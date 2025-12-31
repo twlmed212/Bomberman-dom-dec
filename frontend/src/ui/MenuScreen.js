@@ -22,14 +22,19 @@ export function MenuScreen() {
                 makeElement('div', {class: 'input-container'}, [
                     makeElement('label', {for: 'nickname'}, 'Nickname'),
                     makeElement('input', {
-                        type: 'text', id: 'nickname', placeholder: 'Enter your nickname', maxlength: 15,
-                        value: state.nickname, onInput: (e) => {
+                        type: 'text',
+                        id: 'nickname',
+                        name: 'nickname',
+                        placeholder: 'Enter your nickname',
+                        maxlength: 15,
+                        autocomplete: 'off',
+                        value: state.nickname,
+                        onInput: (e) => {
                             setState({nickname: e.target.value});
                         },
                         onKeyDown: (e) => {
-                            setState({nickname: e.target.value});
                             if (e.key === 'Enter') {
-                                checkUser();
+                                joinGame();
                             }
                         }
                     }),
@@ -37,7 +42,7 @@ export function MenuScreen() {
                 ]),
                 makeElement('button', {id: 'joinBtn',
                     onClick: joinGame
-                }, 'Enter Game ->'),
+                }, 'Enter Game'),
                 makeElement('p', {id: 'error', class: 'error', style: `display: ${state.error ? 'block' : 'none'}`}, state.error || ''),
             ]),
         ])

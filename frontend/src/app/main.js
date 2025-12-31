@@ -6,6 +6,7 @@ import { LobbyScreen } from '../ui/LobbyScreen.js';
 import { GameOverScreen } from '../ui/GameOverScreen.js';
 import { GameScreen } from '../game/GameScreen.js';
 import { ws } from '../ws.js';
+import { SERVER_TO_CLIENT } from '../../../shared/messages/index.js';
 
 const root = document.getElementById('app');
 
@@ -19,27 +20,43 @@ initState({
   chatMessages: [],
   chatInput: '',
   countdown: null,
+  waiting: false,
+  waitingTime: 0,
   winner: null,
   gameState: null,
+  error: '',
   hooks: []
 });
 
-// For Testing
 // Setup WebSocket listeners
-ws.on('CONNECTED', (data) => {
+ws.on(SERVER_TO_CLIENT.ERROR, (data) => {
+  console.log('Error:', data.message);
+  setState({ error: data.message });
+});
+
+ws.on(SERVER_TO_CLIENT.CONNECTED, (data) => {
   console.log('Connected:', data);
   setState({ playerId: data.playerId });
 });
 
-ws.on('LOBBY_UPDATE', (data) => {
+ws.on(SERVER_TO_CLIENT.LOBBY_UPDATE, (data) => {
   console.log('Lobby update:', data);
-  setState({ 
-    players: data.players,
-    screen: 'lobby'
-  });
+  const state = getState();
+
+  // Only go to lobby if we're actually in the player list
+  const isInLobby = data.players.some(p => p.id === state.playerId);
+
+  if (isInLobby) {
+    setState({
+      players: data.players,
+      screen: 'lobby',
+      waiting: data.waiting || false,
+      waitingTime: data.waitingTime || 0
+    });
+  }
 });
 
-ws.on('CHAT_MESSAGE', (data) => {
+ws.on(SERVER_TO_CLIENT.CHAT_MESSAGE, (data) => {
   console.log('New chat:', data);
   const state = getState();
   setState({ 
@@ -47,19 +64,25 @@ ws.on('CHAT_MESSAGE', (data) => {
   });
 });
 
-ws.on('GAME_START', (data) => {
+ws.on(SERVER_TO_CLIENT.GAME_START, (data) => {
   console.log('Game starting:', data);
-  setState({ 
+  setState({
     countdown: data.countdown,
-    screen: 'game'  // ← Now we have GameScreen
+    screen: data.countdown > 0 ? 'lobby' : 'game'
   });
 });
 
-ws.on('GAME_STATE', (data) => {
-  setState({ gameState: data });
+ws.on(SERVER_TO_CLIENT.GAME_STATE, (data) => {
+  const state = getState();
+  // If we receive game state but we're still in lobby, transition to game
+  if (state.screen === 'lobby') {
+    setState({ gameState: data, screen: 'game', countdown: null });
+  } else {
+    setState({ gameState: data });
+  }
 });
 
-ws.on('GAME_OVER', (data) => {
+ws.on(SERVER_TO_CLIENT.GAME_OVER, (data) => {
   console.log('Game over:', data);
   setState({ 
     winner: data.winner,
@@ -80,10 +103,18 @@ function App() {
   return MenuScreen();
 }
 
-// Re-render on state change
+// Re-render on state change with requestAnimationFrame
+let rafScheduled = false;
+
 subscribe(() => {
-  resetHookIndex();
-  render(App(), root);
+  if (!rafScheduled) {
+    rafScheduled = true;
+    requestAnimationFrame(() => {
+      rafScheduled = false;
+      resetHookIndex();
+      render(App(), root);
+    });
+  }
 });
 
 // Initial render

@@ -45,6 +45,17 @@ function createDOM(vnode) {
         } else if (key === 'value') {
             element.setAttribute('value', value);
             element.value = value;
+        } else if (key === 'autofocus') {
+            if (value) {
+                element.setAttribute('autofocus', '');
+                setTimeout(() => element.focus(), 0);
+            }
+        } else if (key === 'autoscroll') {
+            if (value) {
+                setTimeout(() => {
+                    element.scrollTop = element.scrollHeight;
+                }, 0);
+            }
         } else {
             element.setAttribute(key, value);
         }
@@ -90,7 +101,6 @@ function updateDOM(oldVnode, newVnode, parent) {
         return;
     }
 
-    // FIX 3: Reuse element
     newVnode.element = oldVnode.element;
 
     updateAttributes(oldVnode, newVnode);
@@ -129,10 +139,33 @@ function updateAttributes(oldVnode, newVnode) {
             } else if (key === 'value') {
                 elem.setAttribute('value', value);
                 elem.value = value;
+            } else if (key === 'autofocus') {
+                if (value) {
+                    elem.setAttribute('autofocus', '');
+                    setTimeout(() => elem.focus(), 0);
+                }
+            } else if (key === 'autoscroll') {
+                if (value) {
+                    setTimeout(() => {
+                        elem.scrollTop = elem.scrollHeight;
+                    }, 0);
+                }
             } else {
                 elem.setAttribute(key, value);
             }
         }
+    }
+
+    // Always focus if autofocus is true (even if unchanged)
+    if (newAttrs.autofocus) {
+        setTimeout(() => elem.focus(), 0);
+    }
+
+    // Always scroll if autoscroll is true (even if unchanged)
+    if (newAttrs.autoscroll) {
+        setTimeout(() => {
+            elem.scrollTop = elem.scrollHeight;
+        }, 0);
     }
 }
 function updateChildren(oldVnode, newVnode) {
