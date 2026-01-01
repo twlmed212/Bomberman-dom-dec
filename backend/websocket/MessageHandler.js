@@ -49,21 +49,25 @@ export class MessageHandler {
       return;
     }
 
-    // Send CONNECTED first so playerId is set before LOBBY_UPDATE arrives
+    // Try to add to lobby (checks game running, room full, duplicates)
+    const result = this.lobby.addPlayer(this.playerId, name, this.ws);
+
+    if (!result.success) {
+      this.send(SERVER_TO_CLIENT.ERROR, { message: result.error });
+      return;
+    }
+
+    this.playerName = name;
+
+    // Send CONNECTED first so playerId is set before LOBBY_UPDATE
     this.send(SERVER_TO_CLIENT.CONNECTED, {
       playerId: this.playerId,
       playerName: name
     });
 
-    // Try to add to lobby (checks for duplicates and broadcasts LOBBY_UPDATE)
-    const success = this.lobby.addPlayer(this.playerId, name, this.ws);
-
-    if (!success) {
-      this.send(SERVER_TO_CLIENT.ERROR, { message: 'Name already taken' });
-      return;
-    }
-
-    this.playerName = name;
+    // Now broadcast lobby update and check start conditions
+    this.lobby.broadcastLobbyUpdate();
+    this.lobby.checkStartConditions();
   }
 
   handleChat(message) {

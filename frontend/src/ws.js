@@ -6,6 +6,7 @@ let socket = null;
 let listeners = {};
 
 export const ws = {
+
   connect() {
     console.log('🔌 Connecting to server...');
     
@@ -65,5 +66,5 @@ export const ws = {
     if (socket && socket.readyState === WebSocket.OPEN) {
       socket.send(JSON.stringify({ type, ...data }));
     }
-  }
+  },
 };

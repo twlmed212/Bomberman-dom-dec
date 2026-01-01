@@ -4,6 +4,15 @@ import { ChatPanel } from './ChatPanel.js';
 
 export function LobbyScreen() {
     const state = getState();
+
+    // Guard: If no playerId, don't render lobby (just show loading)
+    // The LOBBY_UPDATE handler will redirect to menu
+    if (!state.playerId || state.players.length === 0) {
+        return makeElement('div', { class: 'lobby-screen' }, [
+            makeElement('div', { class: 'loading' }, 'Loading...')
+        ]);
+    }
+
     const players = state.players || [];
 
     // Determine what message to show
@@ -15,7 +24,6 @@ export function LobbyScreen() {
     } else if (players.length < 2) {
         statusMessage = 'Waiting for players to join...';
     }
-
     return(
         makeElement('div', {class: 'lobby-screen'}, [
             makeElement('div', {class: 'lobby-container'}, [

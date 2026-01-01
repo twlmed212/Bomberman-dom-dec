@@ -13,7 +13,22 @@ export class LobbyManager {
   }
 
   addPlayer(playerId, name, ws) {
-    // Check for duplicate name with active connection
+    // Check 1: Is game currently running?
+    if (this.gameManager.state.running || this.players.size == 4) {
+      console.log('Join rejected - game in progress:', name);
+      return { success: false, error: 'Game in progress, please wait' };
+    }
+
+    // Check 2: Is lobby full? (Max 4 players)
+    const activePlayerCount = Array.from(this.players.values())
+      .filter(p => p.ws.readyState === 1).length;
+
+    if (activePlayerCount >= 4) {
+      console.log('Join rejected - room full:', name);
+      return { success: false, error: 'Room is full (4/4)' };
+    }
+
+    // Check 3: Duplicate name with active connection
     for (const [id, player] of this.players.entries()) {
       if (player.name === name) {
         // If WebSocket is closed/closing, remove the old player
@@ -22,7 +37,7 @@ export class LobbyManager {
           this.players.delete(id);
         } else {
           console.log('Duplicate name rejected:', name);
-          return false;
+          return { success: false, error: 'Name already taken' };
         }
       }
     }
@@ -34,9 +49,8 @@ export class LobbyManager {
     });
 
     console.log('Player joined lobby:', name);
-    this.broadcastLobbyUpdate();
-    this.checkStartConditions(); // Check immediately when player joins
-    return true;
+    // Don't broadcast here - MessageHandler will do it after sending CONNECTED
+    return { success: true };
   }
 
   removePlayer(playerId) {
