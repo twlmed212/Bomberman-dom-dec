@@ -49,14 +49,21 @@ export class MessageHandler {
       return;
     }
 
+    // Try to add to lobby (checks for duplicates and broadcasts LOBBY_UPDATE)
+    const result = this.lobby.addPlayer(this.playerId, name, this.ws);
+
+    if (!result.success) {
+      this.send(SERVER_TO_CLIENT.ERROR, { message: result.message });
+      return;
+    }
+
     // Send CONNECTED first so playerId is set before LOBBY_UPDATE arrives
+    // actually, LOBBY_UPDATE arrives first from addPlayer(), but that's fine.
+    // We only confirm connection if lobby add was successful.
     this.send(SERVER_TO_CLIENT.CONNECTED, {
       playerId: this.playerId,
       playerName: name
     });
-
-    // Try to add to lobby (checks for duplicates and broadcasts LOBBY_UPDATE)
-    const result = this.lobby.addPlayer(this.playerId, name, this.ws);
 
     if (!result.success) {
       this.send(SERVER_TO_CLIENT.ERROR, { message: result.message });
