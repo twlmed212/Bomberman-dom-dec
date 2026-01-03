@@ -5,7 +5,7 @@ export class Bomb {
     this.y = y;
     this.playerId = playerId;
     this.flameRange = flameRange;
-    this.ticksRemaining = 60; // 3 seconds at 20 ticks/sec
+    this.ticksRemaining = 180; // 3 seconds at 60 ticks/sec
   }
 
   tick() {
