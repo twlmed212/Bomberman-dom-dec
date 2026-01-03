@@ -209,11 +209,11 @@ export class GameManager {
     // Speed 3 = move every 2 ticks (~30 moves/sec at 60Hz)
     // Speed 4+ = move every 1 tick (60 moves/sec at 60Hz)
     const cooldown = Math.max(1, 7 - player.powerups.speed);
-    
+
     if (player.lastMoveTick === undefined) {
       player.lastMoveTick = this.state.tick;
     }
-    
+
     const ticksSinceLastMove = this.state.tick - player.lastMoveTick;
     if (ticksSinceLastMove < cooldown) {
       return; // Still on cooldown
@@ -238,6 +238,23 @@ export class GameManager {
     );
     if (hasOtherPlayer) {
       return; // Can't move into another player
+    }
+
+    // Check for bomb collision
+    // Standard Bomberman rule: If you are NOT on the bomb, you can't walk onto it.
+    // If you ARE on the bomb (just placed it), you can walk off it.
+    const hasBomb = Array.from(this.state.bombs.values()).some(
+      b => b.x === newX && b.y === newY
+    );
+
+    // Exception: If player is currently ON the bomb they are trying to move to (impossible if moving to adjacent), 
+    // but the rule is generic: if valid target has bomb, block it.
+    // Wait, if I place a bomb at 1,1. I am at 1,1.
+    // I move to 1,2. newX=1, newY=2. 
+    // Bomb is at 1,1. hasBomb at 1,2 is false. OK.
+    // I am at 1,2. I move to 1,1. Bomb at 1,1. hasBomb is true. Blocked. OK.
+    if (hasBomb) {
+      return;
     }
 
     player.lastMoveTick = this.state.tick;
