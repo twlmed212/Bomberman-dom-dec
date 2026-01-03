@@ -77,6 +77,9 @@ ws.on(SERVER_TO_CLIENT.CHAT_MESSAGE, (data) => {
 });
 
 ws.on(SERVER_TO_CLIENT.GAME_START, (data) => {
+  const state = getState();
+  if (!state.playerId) return; // Ignore if we are not a joined player
+
   console.log('Game starting:', data);
   setState({
     countdown: data.countdown,
@@ -86,6 +89,8 @@ ws.on(SERVER_TO_CLIENT.GAME_START, (data) => {
 
 ws.on(SERVER_TO_CLIENT.GAME_STATE, (data) => {
   const state = getState();
+  if (!state.playerId) return; // Ignore if we are not a joined player
+
   // If we receive game state but we're still in lobby, transition to game
   if (state.screen === 'lobby') {
     setState({ gameState: data, screen: 'game', countdown: null });
@@ -96,6 +101,9 @@ ws.on(SERVER_TO_CLIENT.GAME_STATE, (data) => {
 });
 
 ws.on(SERVER_TO_CLIENT.GAME_OVER, (data) => {
+  const state = getState();
+  if (!state.playerId) return; // Ignore if we are not a joined player
+
   console.log('Game over:', data);
   setState({
     winner: data.winner,
@@ -137,7 +145,7 @@ function renderLoop() {
   const now = performance.now();
   frameCount++;
   frameId++; // Increment every frame to force DOM update
-  
+
   // Calculate FPS every second (more accurate calculation)
   if (now - lastFpsTime >= 1000) {
     currentFps = Math.round((frameCount * 1000) / (now - lastFpsTime));
@@ -145,7 +153,7 @@ function renderLoop() {
     frameCount = 0;
     lastFpsTime = now;
   }
-  
+
   // Update FPS counter directly in DOM (bypasses virtual DOM for guaranteed visibility)
   if (!fpsElement) {
     fpsElement = document.createElement('div');
@@ -155,11 +163,11 @@ function renderLoop() {
   }
   // Update text every frame to force repaint
   fpsElement.textContent = `FPS: ${currentFps}`;
-  
+
   // Update state every frame with frameId to force repaint
   // This ensures DevTools sees continuous paint events (~60 FPS)
   setState({ _fps: currentFps, _frameId: frameId });
-  
+
   resetHookIndex();
   render(App(), root);
   needsRender = false;
