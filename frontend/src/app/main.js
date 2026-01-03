@@ -13,7 +13,7 @@ const root = document.getElementById('app');
 initEventSystem(root);
 
 initState({
-  screen: 'menu',
+  screen: 'menu',  // 'menu', 'lobby', 'game', 'gameover'
   nickname: '',
   playerId: null,
   players: [],

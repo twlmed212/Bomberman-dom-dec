@@ -8,13 +8,19 @@ export function GameScreen() {
   const state = getState();
   const gameState = state.gameState || {};
 
-  return makeElement('div', {
+  return makeElement('div', game_class, [
+    GameHUD(),
+    Renderer(gameState)
+  ]);
+}
+
+
+const game_class = {
     class: 'game-screen',
     tabindex: 0,
     autofocus: true,
     style: 'outline: none;',
     onKeyDown: (e) => {
-      // Prevent default for arrow keys and space
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'Spacebar'].includes(e.key)) {
         e.preventDefault();
       }
@@ -32,8 +38,4 @@ export function GameScreen() {
 
       if (direction) ws.sendMove(direction);
     }
-  }, [
-    GameHUD(),
-    Renderer(gameState)
-  ]);
-}
+  };
