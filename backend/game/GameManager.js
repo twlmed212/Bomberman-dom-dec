@@ -9,7 +9,7 @@ export class GameManager {
     this.state = this.createInitialState();
     this.gameStateHandlers = new Set();
     this.gameOverHandlers = new Set();
-    this.gameLoop = new GameLoop(20);
+    this.gameLoop = new GameLoop(60);
   }
 
   createInitialState() {
@@ -274,7 +274,7 @@ export class GameManager {
   getBlocks() {
     const blocks = [];
     const grid = this.state.map.getGrid();
-    
+
     for (let y = 0; y < grid.length; y++) {
       for (let x = 0; x < grid[y].length; x++) {
         if (grid[y][x] === 2) {
@@ -282,7 +282,7 @@ export class GameManager {
         }
       }
     }
-    
+
     return blocks;
   }
 

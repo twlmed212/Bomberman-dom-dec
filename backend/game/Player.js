@@ -16,22 +16,32 @@ export class Player {
   }
 
   move(direction, map) {
-    let newX = this.x;
-    let newY = this.y;
+    let distance = 0;
+    const maxDistance = this.powerups.speed; // Speed 1 = 1 tile, Speed 2 = 2 tiles
+    let movedAny = false;
 
-    if (direction === 'UP') newY--;
-    else if (direction === 'DOWN') newY++;
-    else if (direction === 'LEFT') newX--;
-    else if (direction === 'RIGHT') newX++;
+    while (distance < maxDistance) {
+      let newX = this.x;
+      let newY = this.y;
 
-    // Check if walkable
-    if (map.isWalkable(newX, newY)) {
-      this.x = newX;
-      this.y = newY;
-      return true;
+      if (direction === 'UP') newY--;
+      else if (direction === 'DOWN') newY++;
+      else if (direction === 'LEFT') newX--;
+      else if (direction === 'RIGHT') newX++;
+
+      // Check if walkable
+      if (map.isWalkable(newX, newY)) {
+        this.x = newX;
+        this.y = newY;
+        movedAny = true;
+        distance++;
+      } else {
+        // Hit a wall, stop moving
+        break;
+      }
     }
 
-    return false;
+    return movedAny;
   }
 
   canPlaceBomb() {
@@ -52,7 +62,7 @@ export class Player {
     if (!this.isAlive) return false;
 
     this.lives--;
-    
+
     if (this.lives <= 0) {
       this.isAlive = false;
       return true; // Player died

@@ -13,6 +13,11 @@ export class LobbyManager {
   }
 
   addPlayer(playerId, name, ws) {
+    if (this.players.size >= 4) {
+      console.log('Lobby full, rejecting player:', name);
+      return false;
+    }
+
     // Check for duplicate name with active connection
     for (const [id, player] of this.players.entries()) {
       if (player.name === name) {
@@ -127,7 +132,7 @@ export class LobbyManager {
       if (this.waitingCountdown <= 0) {
         this.cancelWaiting();
         if (this.players.size >= 2) {
-          this.startGame();
+          this.startCountdown(10);
         }
       }
     }, 1000);
@@ -167,7 +172,7 @@ export class LobbyManager {
     if (this.countdownTimer && this.currentCountdown === duration) return;
 
     console.log(`Starting game countdown: ${duration} seconds`);
-    
+
     this.currentCountdown = duration;
 
     this.wsServer.broadcast({
@@ -202,7 +207,7 @@ export class LobbyManager {
 
   startGame() {
     console.log('🎮 Starting game!');
-    
+
     const playerList = Array.from(this.players.entries()).map(([id, p]) => ({
       id,
       name: p.name
