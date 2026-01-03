@@ -16,31 +16,24 @@ export class Player {
   }
 
   move(direction, map) {
-    let distance = 0;
-    const maxDistance = this.powerups.speed;
-    const visitedTiles = []; // Track all tiles we pass through
+    const visitedTiles = [];
 
-    while (distance < maxDistance) {
-      let newX = this.x;
-      let newY = this.y;
+    let newX = this.x;
+    let newY = this.y;
 
-      if (direction === 'UP') newY--;
-      else if (direction === 'DOWN') newY++;
-      else if (direction === 'LEFT') newX--;
-      else if (direction === 'RIGHT') newX++;
+    if (direction === 'UP') newY--;
+    else if (direction === 'DOWN') newY++;
+    else if (direction === 'LEFT') newX--;
+    else if (direction === 'RIGHT') newX++;
 
-      // Check if walkable
-      if (map.isWalkable(newX, newY)) {
-        this.x = newX;
-        this.y = newY;
-        visitedTiles.push({ x: newX, y: newY });
-        distance++;
-      } else {
-        break;
-      }
+    // Check if walkable
+    if (map.isWalkable(newX, newY)) {
+      this.x = newX;
+      this.y = newY;
+      visitedTiles.push({ x: newX, y: newY });
     }
 
-    return visitedTiles; // Return all tiles visited (for powerup collection)
+    return visitedTiles;
   }
 
   canPlaceBomb() {
