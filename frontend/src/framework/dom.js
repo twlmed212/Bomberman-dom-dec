@@ -173,20 +173,75 @@ function updateChildren(oldVnode, newVnode) {
     const oldKids = oldVnode.children || [];
     const newKids = newVnode.children || [];
 
-    const maxLength = Math.max(oldKids.length, newKids.length);
+    // Use key-based diffing for better performance when keys are present
+    // Build map of old nodes by key for O(1) lookup
+    const oldKeyMap = new Map();
+    oldKids.forEach((child) => {
+        if (child && child.key !== undefined) {
+            oldKeyMap.set(child.key, child);
+        }
+    });
+
+    // Track which old nodes have been used
+    const usedOldNodes = new Set();
     
-    for (let i = 0; i < maxLength; i++) {
-        const oldChild = oldKids[i];
-        const newChild = newKids[i];
+    // First pass: process new children in order, matching by key when possible
+    newKids.forEach((newChild, newIdx) => {
+        let oldChild = null;
+        let oldIdx = -1;
         
-        if (!newChild) {
-            if (oldChild && oldChild.element) {
+        // Try to find matching old node by key
+        if (newChild && newChild.key !== undefined) {
+            const matchedOld = oldKeyMap.get(newChild.key);
+            if (matchedOld && !usedOldNodes.has(matchedOld)) {
+                oldChild = matchedOld;
+                oldIdx = oldKids.indexOf(matchedOld);
+                usedOldNodes.add(matchedOld);
+            }
+        }
+        
+        // If no key match, try to match by position (for nodes without keys)
+        if (!oldChild && newIdx < oldKids.length) {
+            const candidate = oldKids[newIdx];
+            // Only use if it hasn't been matched by key and has no key itself
+            if (candidate && !usedOldNodes.has(candidate) && 
+                (candidate.key === undefined || !oldKeyMap.has(candidate.key))) {
+                // Check if tags match
+                if (candidate.tag === newChild.tag) {
+                    oldChild = candidate;
+                    oldIdx = newIdx;
+                    usedOldNodes.add(candidate);
+                }
+            }
+        }
+        
+        // Get the current DOM element at this position
+        const currentDOMChild = parentElement.children[newIdx];
+        
+        if (oldChild && oldChild.element) {
+            // Update existing node
+            if (currentDOMChild !== oldChild.element) {
+                // Need to move element to correct position
+                parentElement.insertBefore(oldChild.element, currentDOMChild);
+            }
+            updateDOM(oldChild, newChild, parentElement);
+        } else {
+            // Create new node
+            const newElem = createDOM(newChild);
+            if (currentDOMChild) {
+                parentElement.insertBefore(newElem, currentDOMChild);
+            } else {
+                parentElement.appendChild(newElem);
+            }
+        }
+    });
+    
+    // Remove any old nodes that weren't matched
+    oldKids.forEach((oldChild) => {
+        if (oldChild && oldChild.element && !usedOldNodes.has(oldChild)) {
+            if (oldChild.element.parentNode === parentElement) {
                 parentElement.removeChild(oldChild.element);
             }
-        } else if (!oldChild) {
-            parentElement.appendChild(createDOM(newChild));
-        } else {
-            updateDOM(oldChild, newChild, parentElement);
         }
-    }
+    });
 }

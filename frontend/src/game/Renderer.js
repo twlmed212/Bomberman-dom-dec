@@ -49,7 +49,7 @@ export function Renderer(gameState) {
   return makeElement('div', { class: 'game-renderer' }, [
     makeElement('div', { class: 'game-grid' },
       map.map((row, y) =>
-        makeElement('div', { class: 'grid-row', key: y },
+        makeElement('div', { class: 'grid-row', key: `row-${y}` },
           row.map((cell, x) => {
             // O(1) lookups
             const player = playerMap[y][x];
@@ -80,7 +80,7 @@ export function Renderer(gameState) {
               content = getPowerUpSprite(powerup.type);
             }
 
-            return makeElement('div', { class: cellClass, key: x }, content);
+            return makeElement('div', { class: cellClass, key: `cell-${y}-${x}` }, content);
           })
         )
       )

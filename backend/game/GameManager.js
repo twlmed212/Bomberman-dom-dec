@@ -9,7 +9,7 @@ export class GameManager {
     this.state = this.createInitialState();
     this.gameStateHandlers = new Set();
     this.gameOverHandlers = new Set();
-    this.gameLoop = new GameLoop(30);
+    this.gameLoop = new GameLoop(20); // Reduced from 30 to 20 Hz for better performance
   }
 
   createInitialState() {

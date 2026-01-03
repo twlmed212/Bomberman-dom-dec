@@ -115,7 +115,7 @@ function App() {
   return MenuScreen();
 }
 
-// Re-render on state change with requestAnimationFrame
+// Re-render on state change with requestAnimationFrame (naturally throttled to display refresh rate)
 let rafScheduled = false;
 
 subscribe(() => {
