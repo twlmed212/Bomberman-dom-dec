@@ -81,6 +81,12 @@ export function render(vnode, container) {
 }
 
 function updateDOM(oldVnode, newVnode, parent) {
+    // Early exit if nodes are the same reference
+    if (oldVnode === newVnode) {
+        newVnode.element = oldVnode.element;
+        return;
+    }
+
     if (!oldVnode || !oldVnode.element) {
         const newElem = createDOM(newVnode);
         if (parent && newElem) parent.appendChild(newElem);
@@ -150,6 +156,12 @@ function updateAttributes(oldVnode, newVnode) {
                         elem.scrollTop = elem.scrollHeight;
                     }, 0);
                 }
+            } else if (key === 'class') {
+                // Optimize class updates - only update if different
+                const currentClass = elem.getAttribute('class') || '';
+                if (currentClass !== value) {
+                    elem.setAttribute('class', value);
+                }
             } else {
                 elem.setAttribute(key, value);
             }
@@ -173,68 +185,86 @@ function updateChildren(oldVnode, newVnode) {
     const oldKids = oldVnode.children || [];
     const newKids = newVnode.children || [];
 
-    // Use key-based diffing for better performance when keys are present
-    // Build map of old nodes by key for O(1) lookup
+    // Quick check if children arrays are the same reference (no changes)
+    if (oldKids === newKids) {
+        return;
+    }
+
+    // Build map of old nodes by key for O(1) lookup (only if keys are used)
     const oldKeyMap = new Map();
-    oldKids.forEach((child) => {
-        if (child && child.key !== undefined) {
-            oldKeyMap.set(child.key, child);
-        }
-    });
+    let hasKeys = false;
+    
+    // Check first child for keys (faster than some())
+    if (oldKids.length > 0 && oldKids[0] && oldKids[0].key !== undefined) {
+        hasKeys = true;
+    } else if (newKids.length > 0 && newKids[0] && newKids[0].key !== undefined) {
+        hasKeys = true;
+    }
+    
+    if (hasKeys) {
+        oldKids.forEach((child) => {
+            if (child && child.key !== undefined) {
+                oldKeyMap.set(child.key, child);
+            }
+        });
+    }
 
     // Track which old nodes have been used
     const usedOldNodes = new Set();
     
-    // First pass: process new children in order, matching by key when possible
-    newKids.forEach((newChild, newIdx) => {
+    // Process new children in order
+    for (let newIdx = 0; newIdx < newKids.length; newIdx++) {
+        const newChild = newKids[newIdx];
         let oldChild = null;
-        let oldIdx = -1;
         
-        // Try to find matching old node by key
-        if (newChild && newChild.key !== undefined) {
+        // Try to find matching old node by key first (if keys are used)
+        if (hasKeys && newChild && newChild.key !== undefined) {
             const matchedOld = oldKeyMap.get(newChild.key);
             if (matchedOld && !usedOldNodes.has(matchedOld)) {
                 oldChild = matchedOld;
-                oldIdx = oldKids.indexOf(matchedOld);
                 usedOldNodes.add(matchedOld);
             }
         }
         
-        // If no key match, try to match by position (for nodes without keys)
+        // If no key match, try to match by position (for nodes without keys or if keys didn't match)
         if (!oldChild && newIdx < oldKids.length) {
             const candidate = oldKids[newIdx];
-            // Only use if it hasn't been matched by key and has no key itself
-            if (candidate && !usedOldNodes.has(candidate) && 
-                (candidate.key === undefined || !oldKeyMap.has(candidate.key))) {
-                // Check if tags match
-                if (candidate.tag === newChild.tag) {
+            if (candidate && !usedOldNodes.has(candidate)) {
+                // If using keys, only match if tags are the same
+                // If not using keys, match by position
+                if (!hasKeys || candidate.tag === newChild.tag) {
                     oldChild = candidate;
-                    oldIdx = newIdx;
                     usedOldNodes.add(candidate);
                 }
             }
         }
         
-        // Get the current DOM element at this position
-        const currentDOMChild = parentElement.children[newIdx];
-        
         if (oldChild && oldChild.element) {
-            // Update existing node
-            if (currentDOMChild !== oldChild.element) {
-                // Need to move element to correct position
-                parentElement.insertBefore(oldChild.element, currentDOMChild);
+            // Update existing node - check if we need to move it
+            // Only check position if we're using keys (nodes might have moved)
+            if (hasKeys) {
+                const currentDOMChild = parentElement.children[newIdx];
+                if (currentDOMChild !== oldChild.element) {
+                    // Move to correct position
+                    if (currentDOMChild) {
+                        parentElement.insertBefore(oldChild.element, currentDOMChild);
+                    } else {
+                        parentElement.appendChild(oldChild.element);
+                    }
+                }
             }
             updateDOM(oldChild, newChild, parentElement);
         } else {
             // Create new node
             const newElem = createDOM(newChild);
+            const currentDOMChild = parentElement.children[newIdx];
             if (currentDOMChild) {
                 parentElement.insertBefore(newElem, currentDOMChild);
             } else {
                 parentElement.appendChild(newElem);
             }
         }
-    });
+    }
     
     // Remove any old nodes that weren't matched
     oldKids.forEach((oldChild) => {

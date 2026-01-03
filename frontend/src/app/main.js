@@ -90,7 +90,11 @@ ws.on(SERVER_TO_CLIENT.GAME_STATE, (data) => {
   if (state.screen === 'lobby') {
     setState({ gameState: data, screen: 'game', countdown: null });
   } else {
-    setState({ gameState: data });
+    // Only update if tick changed (server sends new state each tick)
+    const currentTick = state.gameState?.tick;
+    if (currentTick === undefined || currentTick !== data.tick) {
+      setState({ gameState: data });
+    }
   }
 });
 
