@@ -219,6 +219,27 @@ export class GameManager {
       return; // Still on cooldown
     }
 
+    // Calculate target position
+    let newX = player.x;
+    let newY = player.y;
+    if (direction === 'UP') newY--;
+    else if (direction === 'DOWN') newY++;
+    else if (direction === 'LEFT') newX--;
+    else if (direction === 'RIGHT') newX++;
+
+    // Check if target position is walkable (walls/blocks)
+    if (!this.state.map.isWalkable(newX, newY)) {
+      return; // Can't move into wall or block
+    }
+
+    // Check for player collision (another player at target position)
+    const hasOtherPlayer = Array.from(this.state.players.values()).some(
+      p => p.id !== playerId && p.isAlive && p.x === newX && p.y === newY
+    );
+    if (hasOtherPlayer) {
+      return; // Can't move into another player
+    }
+
     player.lastMoveTick = this.state.tick;
 
     // Move player (returns array of visited tiles)
