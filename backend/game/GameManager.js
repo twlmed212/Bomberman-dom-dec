@@ -203,6 +203,10 @@ export class GameManager {
     const player = this.state.players.get(playerId);
     if (!player || !player.isAlive) return;
 
+    // Limit movement speed (max 1 move per server tick)
+    if (player.lastMoveTick === this.state.tick) return;
+    player.lastMoveTick = this.state.tick;
+
     // Move player (returns array of visited tiles)
     const visitedTiles = player.move(direction, this.state.map);
 
