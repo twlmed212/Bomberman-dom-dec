@@ -9,7 +9,7 @@ export class GameManager {
     this.state = this.createInitialState();
     this.gameStateHandlers = new Set();
     this.gameOverHandlers = new Set();
-    this.gameLoop = new GameLoop(60);
+    this.gameLoop = new GameLoop(30);
   }
 
   createInitialState() {
@@ -203,27 +203,34 @@ export class GameManager {
     const player = this.state.players.get(playerId);
     if (!player || !player.isAlive) return;
 
-    // Calculate new position
-    let newX = player.x;
-    let newY = player.y;
-    if (direction === 'UP') newY--;
-    else if (direction === 'DOWN') newY++;
-    else if (direction === 'LEFT') newX--;
-    else if (direction === 'RIGHT') newX++;
+    // Move player (returns array of visited tiles)
+    const visitedTiles = player.move(direction, this.state.map);
 
-    // Check if destination has a bomb
-    const hasBomb = Array.from(this.state.bombs.values()).some(
-      b => b.x === newX && b.y === newY
-    );
-    if (hasBomb) return;
+    // Check for powerup collection on ALL visited tiles
+    visitedTiles.forEach(tile => {
+      const powerupIndex = this.state.powerups.findIndex(
+        p => p.x === tile.x && p.y === tile.y
+      );
 
-    // Check if destination has another player
-    const hasPlayer = Array.from(this.state.players.values()).some(
-      p => p.id !== playerId && p.isAlive && p.x === newX && p.y === newY
-    );
-    if (hasPlayer) return;
+      if (powerupIndex !== -1) {
+        const powerup = this.state.powerups[powerupIndex];
 
-    player.move(direction, this.state.map);
+        // Apply power-up effect
+        if (powerup.type === 'bomb') {
+          player.powerups.bombCount++;
+          console.log(`💣 ${player.name} picked up BOMB power-up! Count: ${player.powerups.bombCount}`);
+        } else if (powerup.type === 'flame') {
+          player.powerups.flameRange++;
+          console.log(`🔥 ${player.name} picked up FLAME power-up! Range: ${player.powerups.flameRange}`);
+        } else if (powerup.type === 'speed') {
+          player.powerups.speed++;
+          console.log(`⚡ ${player.name} picked up SPEED power-up! Speed: ${player.powerups.speed}`);
+        }
+
+        // Remove collected power-up
+        this.state.powerups.splice(powerupIndex, 1);
+      }
+    });
   }
 
   handleBomb(playerId) {

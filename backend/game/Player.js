@@ -17,8 +17,8 @@ export class Player {
 
   move(direction, map) {
     let distance = 0;
-    const maxDistance = this.powerups.speed; // Speed 1 = 1 tile, Speed 2 = 2 tiles
-    let movedAny = false;
+    const maxDistance = this.powerups.speed;
+    const visitedTiles = []; // Track all tiles we pass through
 
     while (distance < maxDistance) {
       let newX = this.x;
@@ -33,15 +33,14 @@ export class Player {
       if (map.isWalkable(newX, newY)) {
         this.x = newX;
         this.y = newY;
-        movedAny = true;
+        visitedTiles.push({ x: newX, y: newY });
         distance++;
       } else {
-        // Hit a wall, stop moving
         break;
       }
     }
 
-    return movedAny;
+    return visitedTiles; // Return all tiles visited (for powerup collection)
   }
 
   canPlaceBomb() {
