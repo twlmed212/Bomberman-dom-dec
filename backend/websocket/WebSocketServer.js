@@ -3,7 +3,7 @@ import { MessageHandler } from './MessageHandler.js';
 
 export class WebSocketServer {
   constructor(port, lobby, gameManager) {
-    this.wss = new WSServer({ port });
+    this.wss = new WSServer({ port, host: '0.0.0.0' });
     this.lobby = lobby;
     this.gameManager = gameManager;
     this.clients = new Map(); // playerId -> { ws, handler }
