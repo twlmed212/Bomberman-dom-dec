@@ -19,23 +19,23 @@ export class MessageHandler {
       case CLIENT_TO_SERVER.JOIN:
         this.handleJoin(message);
         break;
-      
+
       case CLIENT_TO_SERVER.CHAT:
         this.handleChat(message);
         break;
-      
+
       case CLIENT_TO_SERVER.READY:
         this.handleReady(message);
         break;
-      
+
       case CLIENT_TO_SERVER.MOVE:
         this.handleMove(message);
         break;
-      
+
       case CLIENT_TO_SERVER.BOMB:
         this.handleBomb(message);
         break;
-      
+
       default:
         console.log('Unknown message type:', message.type);
     }
@@ -56,10 +56,10 @@ export class MessageHandler {
     });
 
     // Try to add to lobby (checks for duplicates and broadcasts LOBBY_UPDATE)
-    const success = this.lobby.addPlayer(this.playerId, name, this.ws);
+    const result = this.lobby.addPlayer(this.playerId, name, this.ws);
 
-    if (!success) {
-      this.send(SERVER_TO_CLIENT.ERROR, { message: 'Name already taken' });
+    if (!result.success) {
+      this.send(SERVER_TO_CLIENT.ERROR, { message: result.message });
       return;
     }
 
@@ -68,7 +68,7 @@ export class MessageHandler {
 
   handleChat(message) {
     const text = message.message?.trim();
-    
+
     if (!text || text.length > 140) return;
 
     this.lobby.broadcastChat(this.playerId, this.playerName, text);

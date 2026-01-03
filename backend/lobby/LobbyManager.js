@@ -13,9 +13,9 @@ export class LobbyManager {
   }
 
   addPlayer(playerId, name, ws) {
-    if (this.players.size >= 4) {
+    if (this.gameManager.state.running || this.players.size >= 4) {
       console.log('Lobby full, rejecting player:', name);
-      return false;
+      return { success: false, message: 'Lobby full (or game running). Try again later.' };
     }
 
     // Check for duplicate name with active connection
@@ -27,7 +27,7 @@ export class LobbyManager {
           this.players.delete(id);
         } else {
           console.log('Duplicate name rejected:', name);
-          return false;
+          return { success: false, message: 'Name already taken. Choose another nickname.' };
         }
       }
     }
@@ -41,7 +41,7 @@ export class LobbyManager {
     console.log('Player joined lobby:', name);
     this.broadcastLobbyUpdate();
     this.checkStartConditions(); // Check immediately when player joins
-    return true;
+    return { success: true, message: 'success' };
   }
 
   removePlayer(playerId) {
