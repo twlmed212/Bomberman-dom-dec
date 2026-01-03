@@ -120,7 +120,23 @@ function App() {
 let rafId = null;
 let needsRender = false;
 
+// FPS counter
+let frameCount = 0;
+let lastFpsTime = performance.now();
+let currentFps = 0;
+
 function renderLoop() {
+  const now = performance.now();
+  frameCount++;
+  
+  // Calculate FPS every second
+  if (now - lastFpsTime >= 1000) {
+    currentFps = frameCount;
+    console.log(`🎮 FPS: ${currentFps}`);
+    frameCount = 0;
+    lastFpsTime = now;
+  }
+  
   resetHookIndex();
   render(App(), root);
   needsRender = false;

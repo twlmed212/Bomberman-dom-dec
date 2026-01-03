@@ -203,11 +203,12 @@ export class GameManager {
     const player = this.state.players.get(playerId);
     if (!player || !player.isAlive) return;
 
-    // Cooldown-based movement: speed determines ticks between moves
-    // Speed 1 = move every 3 ticks (20 moves/sec at 60Hz)
-    // Speed 2 = move every 2 ticks (30 moves/sec at 60Hz)
-    // Speed 3 = move every 1 tick (60 moves/sec at 60Hz)
-    const cooldown = Math.max(1, 4 - player.powerups.speed);
+    // Cooldown-based movement: speed determines ticks between moves (slower)
+    // Speed 1 = move every 6 ticks (~10 moves/sec at 60Hz)
+    // Speed 2 = move every 4 ticks (~15 moves/sec at 60Hz)
+    // Speed 3 = move every 2 ticks (~30 moves/sec at 60Hz)
+    // Speed 4+ = move every 1 tick (60 moves/sec at 60Hz)
+    const cooldown = Math.max(1, 7 - player.powerups.speed);
     
     if (player.lastMoveTick === undefined) {
       player.lastMoveTick = this.state.tick;
