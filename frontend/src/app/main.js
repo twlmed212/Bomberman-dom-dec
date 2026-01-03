@@ -90,11 +90,8 @@ ws.on(SERVER_TO_CLIENT.GAME_STATE, (data) => {
   if (state.screen === 'lobby') {
     setState({ gameState: data, screen: 'game', countdown: null });
   } else {
-    // Only update if tick changed (server sends new state each tick)
-    const currentTick = state.gameState?.tick;
-    if (currentTick === undefined || currentTick !== data.tick) {
-      setState({ gameState: data });
-    }
+    // Update game state (render loop handles efficient diffing)
+    setState({ gameState: data });
   }
 });
 
@@ -119,21 +116,25 @@ function App() {
   return MenuScreen();
 }
 
-// Re-render on state change with requestAnimationFrame (naturally throttled to display refresh rate)
-let rafScheduled = false;
+// Continuous 60 FPS render loop (like normal games)
+let rafId = null;
+let needsRender = false;
 
+function renderLoop() {
+  resetHookIndex();
+  render(App(), root);
+  needsRender = false;
+  rafId = requestAnimationFrame(renderLoop);
+}
+
+// Also trigger render on state changes (for immediate updates)
 subscribe(() => {
-  if (!rafScheduled) {
-    rafScheduled = true;
-    requestAnimationFrame(() => {
-      rafScheduled = false;
-      resetHookIndex();
-      render(App(), root);
-    });
-  }
+  needsRender = true;
 });
 
-// Initial render
+// Start the 60 FPS render loop
+rafId = requestAnimationFrame(renderLoop);
+
 // Initial render
 // ws.connect(); // REMOVED: Connect only when joining
 resetHookIndex();

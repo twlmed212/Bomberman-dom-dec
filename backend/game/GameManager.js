@@ -9,7 +9,7 @@ export class GameManager {
     this.state = this.createInitialState();
     this.gameStateHandlers = new Set();
     this.gameOverHandlers = new Set();
-    this.gameLoop = new GameLoop(20); // Reduced from 30 to 20 Hz for better performance
+    this.gameLoop = new GameLoop(60); // 60 Hz for smooth gameplay
   }
 
   createInitialState() {
@@ -203,15 +203,22 @@ export class GameManager {
     const player = this.state.players.get(playerId);
     if (!player || !player.isAlive) return;
 
-    // Limit movement speed based on powerups (speed = max moves per tick)
-    if (player.lastMoveTick !== this.state.tick) {
+    // Cooldown-based movement: speed determines ticks between moves
+    // Speed 1 = move every 3 ticks (20 moves/sec at 60Hz)
+    // Speed 2 = move every 2 ticks (30 moves/sec at 60Hz)
+    // Speed 3 = move every 1 tick (60 moves/sec at 60Hz)
+    const cooldown = Math.max(1, 4 - player.powerups.speed);
+    
+    if (player.lastMoveTick === undefined) {
       player.lastMoveTick = this.state.tick;
-      player.movesThisTick = 0;
+    }
+    
+    const ticksSinceLastMove = this.state.tick - player.lastMoveTick;
+    if (ticksSinceLastMove < cooldown) {
+      return; // Still on cooldown
     }
 
-    if (player.movesThisTick >= player.powerups.speed) return;
-
-    player.movesThisTick = (player.movesThisTick || 0) + 1;
+    player.lastMoveTick = this.state.tick;
 
     // Move player (returns array of visited tiles)
     const visitedTiles = player.move(direction, this.state.map);
