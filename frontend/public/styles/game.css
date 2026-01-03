@@ -189,3 +189,8 @@
   0%, 100% { opacity: 1; }
   50% { opacity: 0.7; }
 }
+
+.winner-title {
+  color: #4ade80;
+  text-shadow: 0 0 10px #22c55e;
+}

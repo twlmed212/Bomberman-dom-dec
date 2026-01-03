@@ -36,19 +36,31 @@ ws.on(SERVER_TO_CLIENT.ERROR, (data) => {
 
 ws.on(SERVER_TO_CLIENT.CONNECTED, (data) => {
   console.log('Connected:', data);
-  setState({ playerId: data.playerId });
+  const state = getState();
+
+  // Check if we are already in the player list (race condition fix)
+  const isInLobby = state.players?.some(p => p.id === data.playerId);
+
+  setState({
+    playerId: data.playerId,
+    screen: isInLobby ? 'lobby' : state.screen
+  });
 });
 
 ws.on(SERVER_TO_CLIENT.LOBBY_UPDATE, (data) => {
   console.log('Lobby update:', data);
   const state = getState();
 
-  // Only go to lobby if we're actually in the player list
-  const isInLobby = data.players.some(p => p.id === state.playerId);
+  // Always update global player list first
+  setState({ players: data.players });
+
+  // Check if we are in the lobby now (using current or new player ID)
+  // We might not have playerId yet if CONNECTED hasn't arrived
+  const myId = state.playerId;
+  const isInLobby = myId && data.players.some(p => p.id === myId);
 
   if (isInLobby) {
     setState({
-      players: data.players,
       screen: 'lobby',
       waiting: data.waiting || false,
       waitingTime: data.waitingTime || 0
@@ -59,7 +71,7 @@ ws.on(SERVER_TO_CLIENT.LOBBY_UPDATE, (data) => {
 ws.on(SERVER_TO_CLIENT.CHAT_MESSAGE, (data) => {
   console.log('New chat:', data);
   const state = getState();
-  setState({ 
+  setState({
     chatMessages: [...state.chatMessages, data]
   });
 });
@@ -84,7 +96,7 @@ ws.on(SERVER_TO_CLIENT.GAME_STATE, (data) => {
 
 ws.on(SERVER_TO_CLIENT.GAME_OVER, (data) => {
   console.log('Game over:', data);
-  setState({ 
+  setState({
     winner: data.winner,
     players: data.players,
     screen: 'gameover'
@@ -94,12 +106,12 @@ ws.on(SERVER_TO_CLIENT.GAME_OVER, (data) => {
 // Router
 function App() {
   const state = getState();
-  
+
   if (state.screen === 'menu') return MenuScreen();
   if (state.screen === 'lobby') return LobbyScreen();
   if (state.screen === 'game') return GameScreen();
   if (state.screen === 'gameover') return GameOverScreen();
-  
+
   return MenuScreen();
 }
 
@@ -118,6 +130,7 @@ subscribe(() => {
 });
 
 // Initial render
-ws.connect();
+// Initial render
+// ws.connect(); // REMOVED: Connect only when joining
 resetHookIndex();
 render(App(), root);

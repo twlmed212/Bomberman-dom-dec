@@ -7,18 +7,18 @@ export class WebSocketServer {
     this.lobby = lobby;
     this.gameManager = gameManager;
     this.clients = new Map(); // playerId -> { ws, handler }
-    
+
     console.log(`🚀 WebSocket Server running on port ${port}`);
-    
+
     this.wss.on('connection', (ws) => this.handleConnection(ws));
   }
 
   handleConnection(ws) {
     console.log('✅ Client connected');
-    
+
     const playerId = 'player_' + Date.now();
     const handler = new MessageHandler(ws, playerId, this.lobby, this.gameManager);
-    
+
     this.clients.set(playerId, { ws, handler });
 
     ws.on('message', (data) => {
